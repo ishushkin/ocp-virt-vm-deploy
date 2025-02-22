@@ -1,0 +1,60 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachineInstance
+metadata:
+  name: {{ name }}
+  namespace: {{ namespace }}
+  finalizers:
+    - kubevirt.io/virtualMachineControllerFinalize
+spec:
+  dataVolumeTemplates:
+    - metadata:
+        name: "{{ name }}-volume"
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: {{ boot_vol }}
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: {{ boot_image_size }}
+  domain:
+    resources:
+      requests:
+        memory: {{ vm_memory_requests }}
+
+  instancetype:
+    kind: virtualmachineclusterinstancetype
+    name: "vm_type"
+  template:
+    metadata:
+      labels:
+        network.kubevirt.io/headlessService: headless
+    spec:
+      accessCredentials:
+        - sshPublicKey:
+            propagationMethod:
+              noCloud: {}
+            source:
+              secret:
+                secretName: {{ cloud_init_secret }}
+      architecture: amd64
+        machine:
+          type: pc-q35-rhel9.4.0
+        resources: {}
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - dataVolume:
+            name: "{{ name }}-volume"
+          name: rootdisk
+        - cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              chpasswd:
+                expire: false
+              password: tsm0-jcv7-z6tv
+              user: rhel
+              runcmd: []
+          name: cloudinitdisk
