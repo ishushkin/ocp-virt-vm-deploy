@@ -1,6 +1,6 @@
 ---
 namespace: "igsh"
-name: "igsh"
+name: "igsh-rhel8-test2"
 boot_vol: "rhel8"
 boot_image_size: "30Gi"
 vm_cpus_cores: 1

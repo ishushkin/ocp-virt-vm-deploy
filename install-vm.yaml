@@ -1,18 +1,24 @@
 ---
 - name: "install vm"
-  hosts: all
+  hosts: localhost
+  connection: local
+  gather_facts: false
   vars_files:
-    - vars.yml
+    - vars.yaml
   tasks:
     - name: "Create Namespace {{ namespace }}"
       kubernetes.core.k8s:
         state: present
         template: namespace.yml.j2
+    - name: "Create SSH Key"
+      kubernetes.core.k8s:
+        state: present
+        template: key.yml.j2
 
     - name: "Create VirtualMachine"
       kubernetes.core.k8s:
         state: present
-        template: virtualmachine.yml.j2
+        template: vm3.yml.j2
 
     - name: Wait for VM to be ready
       kubernetes.core.k8s_info:

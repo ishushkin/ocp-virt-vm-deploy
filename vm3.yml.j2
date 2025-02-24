@@ -1,0 +1,77 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: {{ name }}
+  labels:
+    app: {{ name }}
+  namespace: {{ namespace }}
+spec:
+  dataVolumeTemplates:
+    - metadata:
+        name: "{{ name }}-volume"
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: {{ boot_vol }}
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: {{ boot_image_size }}
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: {{ name }}
+    spec:
+      domain:
+        cpu:
+          cores: {{ vm_cpus_cores }}
+          sockets: {{ vm_cpus_sockets }}
+          threads: {{ vm_cpus_threads }}
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+          interfaces:
+          - masquerade: {}
+            name: default
+          rng: {}
+        features:
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi: {}
+        resources:
+          requests:
+            memory: {{ vm_memory_requests }}
+
+      accessCredentials:
+        - sshPublicKey:
+            propagationMethod:
+              noCloud: {}
+            source:
+              secret:
+                secretName: {{ cloud_init_secret }}
+      evictionStrategy: LiveMigrate
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - dataVolume:
+            name: "{{ name }}-volume"
+          name: rootdisk
+        - cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              chpasswd:
+                expire: false
+              password: tsm0-jcv7-z6tv
+              user: rhel
+              runcmd: []
+          name: cloudinitdisk
