@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ name }}
+  namespace: {{ namespace }}
+spec:
+  ports:
+    - protocol: TCP
+      port: 22
+      targetPort: 22
+      nodePort: 30183
+  type: NodePort
+  selector:
+    kubevirt.io/domain: {{ name }}
