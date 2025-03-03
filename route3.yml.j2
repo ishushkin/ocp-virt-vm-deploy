@@ -9,5 +9,5 @@ spec:
     name: {{ name }}
     weight: 100
   port:
-    targetPort: 30183
+    targetPort: {{ ssh_service_port }}
   wildcardPolicy: None
